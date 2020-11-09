@@ -1,9 +1,0 @@
-{
-	"authors": [
-		"David Au"
-	],
-	"copyright": "Copyright © 2020, David Au",
-	"description": "cat dub.json",
-	"license": "proprietary",
-	"name": "ls"
-}
