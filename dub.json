@@ -1,9 +1,15 @@
 {
 	"authors": [
-		"David Au"
+		"dhasenan",
+		"symmetry_branch"
 	],
-	"copyright": "Copyright © 2020, David Au",
-	"description": "'Thrift D Symmetry Branch'",
-	"license": "proprietary",
-	"name": "symmetry_thrift_d"
+	"dependencies": {
+		"libevent": "~>2.0.2",
+		"openssl": "~>1.1.5"
+	},
+	"description": "D library for Apache Thrift RPC system",
+	"copyright": "Copyright © 2017, dhasenan",
+	"license": "Apache 2.0",
+	"name": "symmetry_thrift_d",
+	"excludedSourceFiles": ["src/thrift/index.d"]
 }
