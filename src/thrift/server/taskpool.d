@@ -17,7 +17,7 @@
  * under the License.
  */
 module thrift.server.taskpool;
-
+version(NeedTServer):
 import core.sync.condition;
 import core.sync.mutex;
 import std.exception : enforce;

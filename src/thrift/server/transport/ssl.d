@@ -17,7 +17,7 @@
  * under the License.
  */
 module thrift.server.transport.ssl;
-
+version(NeedTServer):
 import std.datetime : Duration;
 import std.exception : enforce;
 import std.socket : Socket;

@@ -62,8 +62,8 @@ class TLibeventAsyncManager : TAsyncSocketManager {
     controlReceiveSocket_.blocking = false;
 
     // Register an event for receiving control messages.
-    controlReceiveEvent_ = event_new(eventBase_, controlReceiveSocket_.handle,
-      EV_READ | EV_PERSIST | EV_ET, assumeNothrow(&controlMsgReceiveCallback),
+    controlReceiveEvent_ = event_new(eventBase_, cast(int)controlReceiveSocket_.handle,
+      cast(short)(EV_READ | EV_PERSIST | EV_ET), assumeNothrow(&controlMsgReceiveCallback),
       cast(void*)this);
     event_add(controlReceiveEvent_, null);
 
@@ -188,8 +188,8 @@ private:
   void addOneshotListenerImpl(Socket socket, TAsyncEventType eventType,
      const(timeval)* timeout, TSocketEventListener listener
   ) {
-    registerOneshotEvent(socket.handle, libeventEventType(eventType),
-      assumeNothrow(&socketCallback), timeout, listener);
+    registerOneshotEvent(cast(evutil_socket_t)socket.handle, cast(short)libeventEventType(eventType),
+      cast(event_callback_fn) assumeNothrow(&socketCallback), cast(const(timeval*))timeout, listener);
   }
 
   void registerOneshotEvent(T)(evutil_socket_t fd, short type,

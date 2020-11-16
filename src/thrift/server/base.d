@@ -17,7 +17,7 @@
  * under the License.
  */
 module thrift.server.base;
-
+version(NeedTServer):
 import std.variant : Variant;
 import thrift.protocol.base;
 import thrift.protocol.binary;
@@ -51,7 +51,7 @@ class TServer {
   /// The server event handler to notify. Null by default.
   TServerEventHandler eventHandler;
 
-package:
+package(thrift):
   this(
     TProcessor processor,
     TServerTransport serverTransport,

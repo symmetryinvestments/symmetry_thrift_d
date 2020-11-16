@@ -17,7 +17,7 @@
  * under the License.
  */
 module thrift.server.threaded;
-
+version(NeedTServer):
 import core.thread;
 import std.variant : Variant;
 import thrift.base;

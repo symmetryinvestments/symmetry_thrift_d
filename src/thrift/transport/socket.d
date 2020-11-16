@@ -44,10 +44,6 @@ abstract class TSocketBase : TBaseTransport {
     setSocketOpts();
   }
 
-  this(string unixAddress) {
-	  host_ = host;
-	  isNamedPipe = true;
-  }
   /**
    * Creates a new unconnected socket that will connect to the given host
    * on the given port.
@@ -59,7 +55,6 @@ abstract class TSocketBase : TBaseTransport {
   this(string host, ushort port) {
     host_ = host;
     port_ = port;
-	isNamedPipe = false;
   }
 
   /**
@@ -122,7 +117,6 @@ abstract class TSocketBase : TBaseTransport {
    * already connected socket was used to construct the object.
    */
   ushort port() const @property {
-	  enforce(!isNamedPipe, "cannot get port for UNIX domain socket");
     return port_;
   }
 
@@ -174,8 +168,9 @@ protected:
 
     // Just try to disable Nagle's algorithm – this will fail if we are passed
     // in a non-TCP socket via the Socket-accepting constructor.
-    if (!isNamedPipe)
-	  	socket_.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
+    try {
+      socket_.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
+    } catch (SocketException e) {}
   }
 
   /// Remote host.
@@ -201,15 +196,13 @@ protected:
 
   /// Wrapped socket object.
   Socket socket_;
-
-  bool isNamedPipe;
 }
 
 /**
  * Socket implementation of the TTransport interface.
  *
- * Implementation for Unix domain sockets and Windows named pipes added by Laeeth Isharc
- *
+ * Due to the limitations of std.socket, currently only TCP/IP sockets are
+ * supported (i.e. Unix domain sockets are not).
  */
 class TSocket : TSocketBase {
   ///
@@ -230,7 +223,7 @@ class TSocket : TSocketBase {
 
     enforce(!host_.empty, new TTransportException(
       "Cannot open socket to null host.", TTransportException.Type.NOT_OPEN));
-    enforce(isNamedPipe || (port_ != 0), new TTransportException(
+    enforce(port_ != 0, new TTransportException(
       "Cannot open socket to port zero.", TTransportException.Type.NOT_OPEN));
 
     Address[] addrs;
@@ -244,7 +237,7 @@ class TSocket : TSocketBase {
     Exception[] errors;
     foreach (addr; addrs) {
       try {
-        socket_ = (addr.addressFamily == AddressFamily.UNIX)? new Socket(addr.addressFamily, SocketType.STREAM) : new TcpSocket(addr.addressFamily);
+        socket_ = new TcpSocket(addr.addressFamily);
         setSocketOpts();
         socket_.connect(addr);
         break;
@@ -431,7 +424,7 @@ protected:
 
   void setTimeout(SocketOption type, Duration value) {
     assert(type == SocketOption.SNDTIMEO || type == SocketOption.RCVTIMEO);
-    version (Win32) {
+    version (Windows) {
       if (value > dur!"hnsecs"(0) && value < dur!"msecs"(500)) {
         logError(
           "Socket %s timeout of %s ms might be raised to 500 ms on Windows.",

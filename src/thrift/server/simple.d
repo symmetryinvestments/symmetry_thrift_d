@@ -17,7 +17,7 @@
  * under the License.
  */
 module thrift.server.simple;
-
+version(NeedTServer):
 import std.variant : Variant;
 import thrift.base;
 import thrift.protocol.base;

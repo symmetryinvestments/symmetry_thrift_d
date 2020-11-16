@@ -17,7 +17,7 @@
  * under the License.
  */
 module thrift.server.transport.socket;
-
+version(NeedTServer):
 import core.thread : dur, Duration, Thread;
 import core.stdc.string : strerror;
 import std.array : empty;

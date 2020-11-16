@@ -17,7 +17,7 @@
  * under the License.
  */
 module thrift.server.transport.base;
-
+version(NeedTServer):
 import thrift.base;
 import thrift.transport.base;
 import thrift.util.cancellation;
