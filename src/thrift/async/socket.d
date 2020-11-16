@@ -17,7 +17,7 @@
  * under the License.
  */
 module thrift.async.socket;
-
+import core.stdc.stdint;
 import core.thread : Fiber;
 import core.time : dur, Duration;
 import std.array : empty;
@@ -147,9 +147,8 @@ class TAsyncSocket : TSocketBase, TAsyncTransport {
           return;
         }
 
-        int errorCode = void;
-        socket_.getOption(SocketOptionLevel.SOCKET, cast(SocketOption)SO_ERROR,
-          errorCode);
+        int32_t errorCode = void;
+        socket_.getOption(SocketOptionLevel.SOCKET, cast(SocketOption)SO_ERROR, errorCode);
 
         if (errorCode) {
           logInfo("Could not connect TAsyncSocket: %s",
@@ -343,8 +342,8 @@ private {
     enum SO_ERROR = 0x1007;
   } else version (FreeBSD) {
     enum SO_ERROR = 0x1007;
-  } else version (Win32) {
-    import std.c.windows.winsock : SO_ERROR;
+  } else version (Windows) {
+    import core.sys.windows.winsock2 : SO_ERROR;
   } else static assert(false, "Don't know SO_ERROR on this platform.");
 
   // This hack forces a delegate literal to be scoped, even if it is passed to
