@@ -32,7 +32,7 @@ import thrift.internal.endian;
 import thrift.internal.socket;
 
 version (Windows) {
-  import std.c.windows.winsock : connect;
+  import core.sys.windows.winsock2 : connect;
 } else version (Posix) {
   import core.sys.posix.sys.socket : connect;
 } else static assert(0, "Don't know connect on this platform.");
