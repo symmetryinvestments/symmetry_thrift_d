@@ -1,0 +1,15 @@
+*.[oa]
+*.so
+*.lib
+*.dll
+.*.sw*
+*.lst
+*.map
+*.pdb
+*.suo
+
+.dub
+dub.selections.json
+docs.json
+__dummy.html
+
