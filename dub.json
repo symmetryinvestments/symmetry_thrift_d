@@ -5,7 +5,7 @@
 	],
 	"dependencies": {
 		"libevent": "~>2.0.2",
-		"openssl": "~>1.1.5"
+		"openssl": "~>3.1"
 	},
 	"description": "D library for Apache Thrift RPC system",
 	"copyright": "Copyright © 2017, dhasenan",

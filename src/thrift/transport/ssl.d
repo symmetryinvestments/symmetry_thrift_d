@@ -234,9 +234,6 @@ private:
 /**
  * Represents an OpenSSL context with certification settings, etc. and handles
  * initialization/teardown.
- *
- * OpenSSL is initialized when the first instance of this class is created
- * and shut down when the last one is destroyed (thread-safe).
  */
 class TSSLContext {
   this() {
@@ -244,12 +241,11 @@ class TSSLContext {
     scope(exit) initMutex_.unlock();
 
     if (count_ == 0) {
-      initializeOpenSSL();
       randomize();
     }
     count_++;
 
-    ctx_ = SSL_CTX_new(SSLv23_method());
+    ctx_ = SSL_CTX_new(TLS_method());
     SSL_CTX_set_options(ctx_, SSL_OP_NO_SSLv2);
     SSL_CTX_set_options(ctx_, SSL_OP_NO_SSLv3);   // THRIFT-3164
     enforce(ctx_, getSSLException("SSL_CTX_new"));
@@ -266,9 +262,6 @@ class TSSLContext {
     }
 
     count_--;
-    if (count_ == 0) {
-      cleanupOpenSSL();
-    }
   }
 
   /**
@@ -442,88 +435,7 @@ private:
     initMutex_ = new Mutex();
   }
 
-  static void initializeOpenSSL() {
-    if (initialized_) {
-      return;
-    }
-    initialized_ = true;
-
-    SSL_library_init();
-    SSL_load_error_strings();
-
-    mutexes_ = new Mutex[CRYPTO_num_locks()];
-    foreach (ref m; mutexes_) {
-      m = new Mutex;
-    }
-
-    import thrift.internal.traits;
-    // As per the OpenSSL threads manpage, this isn't needed on Windows.
-    version (Posix) {
-      CRYPTO_set_id_callback(assumeNothrow(&threadIdCallback));
-    }
-    CRYPTO_set_locking_callback(assumeNothrow(&lockingCallback));
-    CRYPTO_set_dynlock_create_callback(assumeNothrow(&dynlockCreateCallback));
-    CRYPTO_set_dynlock_lock_callback(assumeNothrow(&dynlockLockCallback));
-    CRYPTO_set_dynlock_destroy_callback(assumeNothrow(&dynlockDestroyCallback));
-  }
-
-  static void cleanupOpenSSL() {
-    if (!initialized_) return;
-
-    initialized_ = false;
-    CRYPTO_set_locking_callback(null);
-    CRYPTO_set_dynlock_create_callback(null);
-    CRYPTO_set_dynlock_lock_callback(null);
-    CRYPTO_set_dynlock_destroy_callback(null);
-    CRYPTO_cleanup_all_ex_data();
-    ERR_free_strings();
-    ERR_remove_state(0);
-  }
-
   static extern(C) {
-    version (Posix) {
-      import core.sys.posix.pthread : pthread_self;
-      c_ulong threadIdCallback() {
-        return cast(c_ulong)pthread_self();
-      }
-    }
-
-    void lockingCallback(int mode, int n, const(char)* file, int line) {
-      if (mode & CRYPTO_LOCK) {
-        mutexes_[n].lock();
-      } else {
-        mutexes_[n].unlock();
-      }
-    }
-
-    CRYPTO_dynlock_value* dynlockCreateCallback(const(char)* file, int line) {
-      enum size =  __traits(classInstanceSize, Mutex);
-      auto mem = malloc(size)[0 .. size];
-      if (!mem) onOutOfMemoryError();
-      GC.addRange(mem.ptr, size);
-      auto mutex = emplace!Mutex(mem);
-      return cast(CRYPTO_dynlock_value*)mutex;
-    }
-
-    void dynlockLockCallback(int mode, CRYPTO_dynlock_value* l,
-      const(char)* file, int line)
-    {
-      if (l is null) return;
-      if (mode & CRYPTO_LOCK) {
-        (cast(Mutex)l).lock();
-      } else {
-        (cast(Mutex)l).unlock();
-      }
-    }
-
-    void dynlockDestroyCallback(CRYPTO_dynlock_value* l,
-      const(char)* file, int line)
-    {
-      GC.removeRange(l);
-      destroy(cast(Mutex)l);
-      free(l);
-    }
-
     int passwordCallback(char* password, int size, int, void* data) nothrow {
       auto context = cast(TSSLContext) data;
       auto userPassword = context.getPassword(size);
