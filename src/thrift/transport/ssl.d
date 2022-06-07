@@ -403,7 +403,7 @@ class TSSLContext {
 
   SSL* createSSL() out (result) {
     assert(result);
-  } body {
+  } do {
     auto result = SSL_new(ctx_);
     enforce(result, getSSLException("SSL_new"));
     return result;
@@ -419,7 +419,7 @@ protected:
    */
   string getPassword(int size) nothrow out(result) {
     assert(result.length < size);
-  } body {
+  } do {
     return "";
   }
 

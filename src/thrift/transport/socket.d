@@ -78,7 +78,7 @@ abstract class TSocketBase : TBaseTransport {
     // in the method body it correctly is 27 (equal to the return value).
     version (none) assert(written <= buf.length, text("Implementation wrote " ~
       "more data than requested to?! (", written, " vs. ", buf.length, ")"));
-  } body {
+  } do {
     assert(0, "DMD bug? – Why would contracts work for interfaces, but not " ~
       "for abstract methods? " ~
       "(Error: function […] in and out contracts require function body");
