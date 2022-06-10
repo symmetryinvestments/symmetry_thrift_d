@@ -23,12 +23,16 @@ import core.stdc.config;
 import core.stdc.errno : errno;
 import core.stdc.string : strerror;
 import deimos.openssl.err;
+import deimos.openssl.opensslv;
 import deimos.openssl.ssl;
 import deimos.openssl.x509v3;
 import std.array : empty, appender;
 import std.conv : to;
 import std.socket : Address;
 import thrift.transport.ssl;
+
+static assert(OPENSSL_VERSION_AT_LEAST(1, 1, 0),
+              "This library does not support OpenSSL < 1.1.0");
 
 /**
  * Checks if the peer is authorized after the SSL handshake has been
@@ -99,10 +103,10 @@ void authorize(SSL* ssl, TAccessManager accessManager,
       auto data = ASN1_STRING_data(name.d.ia5);
       auto length = ASN1_STRING_length(name.d.ia5);
       switch (name.type) {
-        case GENERAL_NAME.GEN_DNS:
+        case GEN_DNS:
           decision = accessManager.verify(hostName, cast(char[])data[0 .. length]);
           break;
-        case GENERAL_NAME.GEN_IPADD:
+        case GEN_IPADD:
           decision = accessManager.verify(peerAddress, data[0 .. length]);
           break;
         default:
