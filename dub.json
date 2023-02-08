@@ -4,12 +4,23 @@
 		"symmetry_branch"
 	],
 	"dependencies": {
-		"libevent": "~>2.0.2",
 		"openssl": "~>3.1"
 	},
 	"description": "D library for Apache Thrift RPC system",
 	"copyright": "Copyright © 2017, dhasenan",
 	"license": "Apache 2.0",
 	"name": "symmetry_thrift_d",
-	"excludedSourceFiles": ["src/thrift/index.d"]
+	"excludedSourceFiles": ["src/thrift/index.d"],
+	"configurations": [
+		{
+			"name": "default",
+			"dependencies": {
+				"libevent": "~>2.0.2"
+			}
+		},
+		{
+			"name": "no-libevent",
+			"excludedSourceFiles": ["src/thrift/async/libevent.d"]
+		}
+	]
 }
